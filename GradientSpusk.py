@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QMessageBox, \
     QHBoxLayout, QTextEdit, QSlider
 from PySide6.QtCore import Qt
