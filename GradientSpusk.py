@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QMessageBox, \
     QHBoxLayout, QTextEdit, QSlider, QDialog
 from PySide6.QtCore import Qt
@@ -11,7 +10,7 @@ from matplotlib.figure import Figure
 functions = {
     "f1": lambda x1, x2: 2 * x1 ** 2 + x1 * x2 + x2 ** 2,
     "f2": lambda x1, x2: np.sin(x1) + np.cos(x2),
-    "f3": lambda x1, x2: x1 ** 2 - x2 ** 2
+    "f3": lambda x1, x2: (x1**2 + x2 - 11)**2 + (x1 + x2**2 -7)**2
 }
 
 
@@ -47,6 +46,7 @@ def gradient_descent(f, learning_rate, max_iterations, initial_point, epsilon1, 
         iterations_log.append(f"Итерация {k}: x={x}, f(x)={f_x}")
 
         if abs(f_x) < epsilon1:
+            print("|f(x*)| < epsilon1")  # Вывод в консоль
             return x, trajectory, "|f(x*)| < epsilon1", iterations_log
 
         t_k = learning_rate
@@ -54,12 +54,14 @@ def gradient_descent(f, learning_rate, max_iterations, initial_point, epsilon1, 
         f_x_next = f(x_next[0], x_next[1])
 
         if np.linalg.norm(x_next - x) < epsilon2 and abs(f_x_next - f_x) < epsilon2:
+            print("||xk+1 - xk|| < epsilon2")  # Вывод в консоль
             return x_next, trajectory, "||xk+1 - xk|| < epsilon2", iterations_log
 
         x = x_next
         trajectory.append(x.copy())
         k += 1
 
+    print("Превышено число итераций")  # Вывод в консоль
     return x, trajectory, "Превышено число итераций", iterations_log
 
 
@@ -117,6 +119,13 @@ class FunctionSelector(QWidget):
         self.function_selector.addItems(functions.keys())
         control_layout.addWidget(QLabel("Выберите функцию:"))
         control_layout.addWidget(self.function_selector)
+
+        self.method_label = QLabel("Выберите метод:")
+        control_layout.addWidget(self.method_label)
+        self.method_combo = QComboBox()
+        self.method_combo.addItems(["Градиентный спуск", "Другой метод"])
+        control_layout.addWidget(self.method_combo)
+
 
         self.run_button = QPushButton("Запустить")
         self.run_button.clicked.connect(self.run_calculation)
