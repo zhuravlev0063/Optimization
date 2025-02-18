@@ -9,7 +9,6 @@ from matplotlib.figure import Figure
 # Функции
 functions = {
     "f1": lambda x1, x2: 2 * x1 ** 2 + x1 * x2 + x2 ** 2,
-    "f2": lambda x1, x2: np.sin(x1) + np.cos(x2),
     "f3": lambda x1, x2: (x1**2 + x2 - 11)**2 + (x1 + x2**2 -7)**2
 }
 
@@ -34,6 +33,9 @@ def gradient_f(f, x1, x2):
 
 
 # Метод градиентного спуска
+import numpy as np
+
+
 def gradient_descent(f, learning_rate, max_iterations, initial_point, epsilon1, epsilon2):
     x = np.array(initial_point, dtype=float)
     trajectory = [x.copy()]
@@ -41,27 +43,43 @@ def gradient_descent(f, learning_rate, max_iterations, initial_point, epsilon1, 
     iterations_log = []
 
     while k < max_iterations:
-        grad = gradient_f(f, x[0], x[1])
+        grad = gradient_f(f, x[0], x[1])  # Градиент функции
         f_x = f(x[0], x[1])
         iterations_log.append(f"Итерация {k}: x={x}, f(x)={f_x}")
 
+        # Проверка условия остановки по epsilon1
         if abs(f_x) < epsilon1:
-            print("|f(x*)| < epsilon1")  # Вывод в консоль
+            print("|f(x*)| < epsilon1")
             return x, trajectory, "|f(x*)| < epsilon1", iterations_log
 
+        # Начальный шаг
         t_k = learning_rate
         x_next = x - t_k * grad
         f_x_next = f(x_next[0], x_next[1])
 
+        # Пересчёт шага, если спуск не происходит
+        step_attempts = 0
+        while f_x_next >= f_x and step_attempts < 2:  # Ограничим число попыток
+            t_k /= 2
+            x_next = x - t_k * grad
+            f_x_next = f(x_next[0], x_next[1])
+            step_attempts += 1
+
+        # Если шаг слишком маленький, завершаем алгоритм
+        if step_attempts == 2:
+            print("Шаг стал слишком маленьким")
+            return x, trajectory, "Шаг стал слишком маленьким", iterations_log
+
+        # Проверка критерия сходимости
         if np.linalg.norm(x_next - x) < epsilon2 and abs(f_x_next - f_x) < epsilon2:
-            print("||xk+1 - xk|| < epsilon2")  # Вывод в консоль
+            print("||xk+1 - xk|| < epsilon2")
             return x_next, trajectory, "||xk+1 - xk|| < epsilon2", iterations_log
 
         x = x_next
         trajectory.append(x.copy())
         k += 1
 
-    print("Превышено число итераций")  # Вывод в консоль
+    print("Превышено число итераций")
     return x, trajectory, "Превышено число итераций", iterations_log
 
 
@@ -90,8 +108,8 @@ class PlotCanvas(FigureCanvas):
 
     def plot(self, f, final_point, trajectory, angle_x=30, angle_y=30, angle_z=30):
         self.ax.clear()
-        x1_range = np.linspace(-2, 2, 400)
-        x2_range = np.linspace(-2, 2, 400)
+        x1_range = np.linspace(-5, 5, 400)
+        x2_range = np.linspace(-5, 5, 400)
         X1, X2 = np.meshgrid(x1_range, x2_range)
         Z = f(X1, X2)
 
@@ -164,7 +182,7 @@ class FunctionSelector(QWidget):
 
     def run_calculation(self):
         f = functions[self.function_selector.currentText()]
-        final_point, trajectory, stop_reason, self.iterations_log = gradient_descent(f, 0.1, 100, [0.5, 1], 1e-3, 1e-3)
+        final_point, trajectory, stop_reason, self.iterations_log = gradient_descent(f, 0.1, 10, [0.5, 1], 1e-3, 1e-3)
         self.plot_canvas.plot(f, final_point, trajectory, self.slider_x.value(), self.slider_y.value(),
                               self.slider_z.value())
 
