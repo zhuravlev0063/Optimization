@@ -61,12 +61,32 @@ class FunctionSelector(QWidget):
 
         self.simplex_params.addWidget(QLabel("Максимум итераций:"))
         self.simplex_params.addWidget(self.simplex_max_iter)
-        self.simplex_params.addWidget(QLabel("Ограничения: a*x0 + b*x1 = c"))
+        self.simplex_params.addWidget(QLabel("Ограничения: a*x0 + b*x1 ≤ c"))
         self.simplex_params.addLayout(self.constraints_layout)
         self.add_constraint_button = QPushButton("Добавить ограничение")
         self.add_constraint_button.clicked.connect(self.add_constraint)
         self.simplex_params.addWidget(self.add_constraint_button)
         control_layout.addLayout(self.simplex_params)
+
+        # Поля ввода для генетического алгоритма
+        self.genetic_params = QVBoxLayout()
+        self.genetic_max_iter = QLineEdit("1500")
+        self.population_size = QLineEdit("300")
+        self.mutation_rate = QLineEdit("0.003")
+        self.bounds_lower = QLineEdit("-2")
+        self.bounds_upper = QLineEdit("2")
+
+        self.genetic_params.addWidget(QLabel("Максимум итераций (поколений):"))
+        self.genetic_params.addWidget(self.genetic_max_iter)
+        self.genetic_params.addWidget(QLabel("Размер популяции:"))
+        self.genetic_params.addWidget(self.population_size)
+        self.genetic_params.addWidget(QLabel("Вероятность мутации:"))
+        self.genetic_params.addWidget(self.mutation_rate)
+        self.genetic_params.addWidget(QLabel("Нижняя граница области:"))
+        self.genetic_params.addWidget(self.bounds_lower)
+        self.genetic_params.addWidget(QLabel("Верхняя граница области:"))
+        self.genetic_params.addWidget(self.bounds_upper)
+        control_layout.addLayout(self.genetic_params)
 
         # Кнопки
         self.run_button = QPushButton("Запустить")
@@ -117,31 +137,45 @@ class FunctionSelector(QWidget):
     def update_params_visibility(self):
         method = self.method_combo.currentText()
         is_gradient = method == "Градиентный спуск"
+        is_simplex = method == "Квадратичный симплекс"
+        is_genetic = method == "Генетический алгоритм"
+
+        # Видимость параметров градиентного спуска
         for i in range(self.gradient_params.count()):
-            self.gradient_params.itemAt(i).widget().setVisible(is_gradient)
+            item = self.gradient_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_gradient)
+
+        # Видимость параметров симплекса
         for i in range(self.simplex_params.count()):
             item = self.simplex_params.itemAt(i)
             if item.widget():
-                item.widget().setVisible(not is_gradient)
+                item.widget().setVisible(is_simplex)
             elif item.layout():
                 layout = item.layout()
                 for j in range(layout.count()):
                     sub_item = layout.itemAt(j)
                     if sub_item.widget():
-                        sub_item.widget().setVisible(not is_gradient)
+                        sub_item.widget().setVisible(is_simplex)
                     elif sub_item.layout():
                         sub_layout = sub_item.layout()
                         for k in range(sub_layout.count()):
                             if sub_layout.itemAt(k).widget():
-                                sub_layout.itemAt(k).widget().setVisible(not is_gradient)
+                                sub_layout.itemAt(k).widget().setVisible(is_simplex)
+
+        # Видимость параметров генетического алгоритма
+        for i in range(self.genetic_params.count()):
+            item = self.genetic_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_genetic)
 
     def run_calculation(self):
         f = available_functions[self.function_selector.currentText()]
         method_name = self.method_combo.currentText()
         method_class = optimization_methods[method_name]
 
-        if method_name == "Градиентный спуск":
-            try:
+        try:
+            if method_name == "Градиентный спуск":
                 initial_point = [float(self.initial_x0.text()), float(self.initial_x1.text())]
                 max_iter = int(self.max_iter.text())
                 epsilon1 = float(self.epsilon1.text())
@@ -149,21 +183,24 @@ class FunctionSelector(QWidget):
                 learning_rate = float(self.learning_rate.text())
                 method = method_class(f, initial_point, max_iter,
                                     learning_rate=learning_rate, epsilon1=epsilon1, epsilon2=epsilon2)
-            except ValueError as e:
-                print(f"Ошибка ввода параметров: {e}")
-                return
-        else:  # Квадратичный симплекс
-            try:
+            elif method_name == "Квадратичный симплекс":
                 max_iter = int(self.simplex_max_iter.text())
                 constraints = [{"a": float(c["a"].text()), "b": float(c["b"].text()), "c": float(c["c"].text())}
                               for c in self.constraints]
                 method = method_class(f, max_iter, constraints=constraints)
-            except ValueError as e:
-                print(f"Ошибка ввода параметров: {e}")
-                return
+            else:  # Генетический алгоритм
+                max_iter = int(self.genetic_max_iter.text())
+                population_size = int(self.population_size.text())
+                mutation_rate = float(self.mutation_rate.text())
+                bounds = (float(self.bounds_lower.text()), float(self.bounds_upper.text()))
+                method = method_class(f, None, max_iter,
+                                    population_size=population_size, mutation_rate=mutation_rate, bounds=bounds)
 
-        final_point, trajectory, stop_reason, self.iterations_log = method.run()
-        self.plot_canvas.plot(f, final_point, trajectory, method_name)
+            final_point, trajectory, stop_reason, self.iterations_log = method.run()
+            self.plot_canvas.plot(f, final_point, trajectory, method_name, constraints=method.kwargs.get("constraints", []))
+        except ValueError as e:
+            print(f"Ошибка ввода параметров: {e}")
+            return
 
     def show_iterations(self):
         IterationWindow(self.iterations_log).exec()
