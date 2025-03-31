@@ -14,10 +14,23 @@ def f_quad_constrained(x1, x2):
     """Квадратичная функция с ограничением: 2x1² + 2x1x2 + 2x2² - 4x1 - 6x2"""
     return 2 * x1**2 + 2 * x1 * x2 + 2 * x2**2 - 4 * x1 - 6 * x2
 
+def f_quad_constraineds(x1, x2):
+    """Квадратичная функция с ограничением: 2x1² + 2x1x2 + 2x2² - 4x1 - 6x2"""
+    return x1**2 - 10 * x1 + x2**2 - 20 * x2 + 125
+
+def f_linear(x1, x2):
+    return -2 * x1 - 3 * x2  # Максимизация прибыли, например
+
+def f_linearsss(x1, x2):
+    return -6 * x1 - 3 * x2 +0.5*x1**2 + x1*x2 + x2**2  # Максимизация прибыли, например
+
 # Словарь функций для интерфейса
 available_functions = {
     "Квадратичная простая": f_quad_simple,
     "Химмельблау": f_himmelblau,
+    "Линейная" : f_linear,
+    "Линейнаяda" : f_linearsss,
     "Квадратичная с ограничением": f_quad_constrained,
-    "Квадратичная с ограничениями": f_quad_constraineded
+    "Квадратичная с ограничениями": f_quad_constraineded,
+    "Квадратичная с ограничениями   c": f_quad_constraineds
 }
