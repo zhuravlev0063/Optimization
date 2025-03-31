@@ -45,8 +45,8 @@ class GradientDescent(OptimizationMethod):
         return x, trajectory, "Превышено число итераций", iterations_log
 
 class QuadraticSimplex(OptimizationMethod):
-    def __init__(self, f, initial_point, max_iterations, **kwargs):
-        super().__init__(f, initial_point, max_iterations, **kwargs)
+    def __init__(self, f, max_iterations, **kwargs):
+        super().__init__(f, None, max_iterations, **kwargs)  # initial_point=None
         self.x = sp.symbols('x0 x1')
         self.l = sp.symbols('l')
         self.v = [sp.symbols('v0'), sp.symbols('v1')]
@@ -69,18 +69,18 @@ class QuadraticSimplex(OptimizationMethod):
         L = self.lagrange_function(self.x, self.l)
         return sp.diff(L, self.x[0]), sp.diff(L, self.x[1]), sp.diff(L, self.l)
 
-    def modify_derivatives(self, dL_dx0, dL_dx1, dL_dl):
+    def modify_derivatives(self, dL_dx0, dL_dx1, dL_dl): #добавляет переменные v0, v1 (возможно для условий неотрицательности) и z0,z1(слэк-переменные)
         """Модификация производных"""
         return (dL_dx0 - self.v[0] + self.z[0],
                 dL_dx1 - self.v[1] + self.z[1],
                 dL_dl + self.w)
 
-    def modify_and_sum_derivatives(self, modified_dL_dx0, modified_dL_dx1):
+    def modify_and_sum_derivatives(self, modified_dL_dx0, modified_dL_dx1): #суммирует первые производные с противопол знаком , убираем z0, z1(ставит их равным 0)
         """Сумма модифицированных производных"""
         return (-modified_dL_dx0.subs({self.z[0]: 0, self.z[1]: 0}) +
                 -modified_dL_dx1.subs({self.z[0]: 0, self.z[1]: 0}))
 
-    def reorder_coefficients(self, expression):
+    def reorder_coefficients(self, expression): #Помогают преобразовать символические выражения в числовые коэффициенты.
         """Упорядочивание коэффициентов"""
         expression = str(expression).replace(' ', '')
         terms = re.findall(r'[+-]?[\d]*\.?[\d]+\*?[a-zA-Z]+(?:\^?\d*)?|[+-]?[a-zA-Z]+\d*|[+-]?[\d]*\.?[\d]+', expression)
@@ -115,14 +115,14 @@ class QuadraticSimplex(OptimizationMethod):
                 values.append(1.0 if coef in ('', '+') else -1.0 if coef == '-' else float(coef))
         return values
 
-    def vect(self):
+    def vect(self): #Извлекает коэффициенты из суммы производных для вектора c (целевая функция симплекса).
         """Получение вектора коэффициентов"""
         dL_dx0, dL_dx1, dL_dl = self.compute_derivatives()
         mod_dx0, mod_dx1, _ = self.modify_derivatives(dL_dx0, dL_dx1, dL_dl)
         summed = self.modify_and_sum_derivatives(mod_dx0, mod_dx1)
         return self.extract_all_values(self.reorder_coefficients(summed))
 
-    def extract_and_modify2(self):
+    def extract_and_modify2(self): #Создаёт матрицу A из модифицированных производных — это ограничения симплекс-метода.
         """Получение матрицы ограничений"""
         dL_dx0, dL_dx1, dL_dl = self.compute_derivatives()
         mod_dx0, mod_dx1, mod_dl = self.modify_derivatives(dL_dx0, dL_dx1, dL_dl)
@@ -133,13 +133,13 @@ class QuadraticSimplex(OptimizationMethod):
     def maxVal(self, a, c):
         """Поиск ведущего элемента: возвращает индексы строки и столбца"""
         up_f = max(c[1:], default=0)
-        if up_f <= 0:  # Если все коэффициенты неположительные, решение найдено
+        if up_f <= 0:
             return None, None
-        max_index = c[1:].index(up_f) + 1  # Индекс столбца
+        max_index = c[1:].index(up_f) + 1
         max_val = [(a[i][0] / a[i][max_index], i) for i in range(len(a)) if a[i][max_index] > 0]
         if not max_val:
             return None, None
-        min_ratio, min_index = min(max_val, key=lambda x: x[0])  # Индекс строки
+        min_ratio, min_index = min(max_val, key=lambda x: x[0])
         if min_ratio < 0:
             return None, None
         return min_index, max_index

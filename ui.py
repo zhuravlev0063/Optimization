@@ -10,7 +10,7 @@ class FunctionSelector(QWidget):
         super().__init__()
         self.setWindowTitle("Выбор функции и метода")
         self.setGeometry(100, 100, 900, 600)
-        self.iterations_log = []  # Инициализация iterations_log
+        self.iterations_log = []
 
         main_layout = QHBoxLayout()
         control_layout = QVBoxLayout()
@@ -54,28 +54,19 @@ class FunctionSelector(QWidget):
 
         # Поля ввода для симплекса
         self.simplex_params = QVBoxLayout()
-        self.simplex_initial_x0 = QLineEdit("0.5")
-        self.simplex_initial_x1 = QLineEdit("1.0")
         self.simplex_max_iter = QLineEdit("10")
-        self.simplex_a = QLineEdit("1")
-        self.simplex_b = QLineEdit("2")
-        self.simplex_c = QLineEdit("2")
+        self.constraints_layout = QVBoxLayout()
+        self.constraints = []
+        self.add_constraint()  # Добавляем первое ограничение по умолчанию
 
-        self.simplex_params.addWidget(QLabel("Начальная точка x0:"))
-        self.simplex_params.addWidget(self.simplex_initial_x0)
-        self.simplex_params.addWidget(QLabel("Начальная точка x1:"))
-        self.simplex_params.addWidget(self.simplex_initial_x1)
         self.simplex_params.addWidget(QLabel("Максимум итераций:"))
         self.simplex_params.addWidget(self.simplex_max_iter)
-        self.simplex_params.addWidget(QLabel("Ограничение: a*x0 + b*x1 = c"))
-        self.simplex_params.addWidget(QLabel("Коэффициент a:"))
-        self.simplex_params.addWidget(self.simplex_a)
-        self.simplex_params.addWidget(QLabel("Коэффициент b:"))
-        self.simplex_params.addWidget(self.simplex_b)
-        self.simplex_params.addWidget(QLabel("Свободный член c:"))
-        self.simplex_params.addWidget(self.simplex_c)
+        self.simplex_params.addWidget(QLabel("Ограничения: a*x0 + b*x1 = c"))
+        self.simplex_params.addLayout(self.constraints_layout)
+        self.add_constraint_button = QPushButton("Добавить ограничение")
+        self.add_constraint_button.clicked.connect(self.add_constraint)
+        self.simplex_params.addWidget(self.add_constraint_button)
         control_layout.addLayout(self.simplex_params)
-        self.update_params_visibility()
 
         # Кнопки
         self.run_button = QPushButton("Запустить")
@@ -93,6 +84,35 @@ class FunctionSelector(QWidget):
         main_layout.addWidget(self.plot_canvas, 3)
 
         self.setLayout(main_layout)
+        self.update_params_visibility()
+
+    def add_constraint(self):
+        """Добавление нового ограничения"""
+        constraint_layout = QHBoxLayout()
+        a_input = QLineEdit("1")
+        b_input = QLineEdit("2")
+        c_input = QLineEdit("2")
+        constraint_layout.addWidget(QLabel("a:"))
+        constraint_layout.addWidget(a_input)
+        constraint_layout.addWidget(QLabel("b:"))
+        constraint_layout.addWidget(b_input)
+        constraint_layout.addWidget(QLabel("c:"))
+        constraint_layout.addWidget(c_input)
+        remove_button = QPushButton("Удалить")
+        remove_button.clicked.connect(lambda: self.remove_constraint(constraint_layout))
+        constraint_layout.addWidget(remove_button)
+        self.constraints_layout.addLayout(constraint_layout)
+        self.constraints.append({"a": a_input, "b": b_input, "c": c_input, "layout": constraint_layout})
+
+    def remove_constraint(self, layout):
+        """Удаление ограничения"""
+        for i, constraint in enumerate(self.constraints):
+            if constraint["layout"] == layout:
+                self.constraints_layout.removeItem(layout)
+                for item in [layout.itemAt(j).widget() for j in range(layout.count())]:
+                    item.deleteLater()
+                del self.constraints[i]
+                break
 
     def update_params_visibility(self):
         method = self.method_combo.currentText()
@@ -100,7 +120,20 @@ class FunctionSelector(QWidget):
         for i in range(self.gradient_params.count()):
             self.gradient_params.itemAt(i).widget().setVisible(is_gradient)
         for i in range(self.simplex_params.count()):
-            self.simplex_params.itemAt(i).widget().setVisible(not is_gradient)
+            item = self.simplex_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(not is_gradient)
+            elif item.layout():
+                layout = item.layout()
+                for j in range(layout.count()):
+                    sub_item = layout.itemAt(j)
+                    if sub_item.widget():
+                        sub_item.widget().setVisible(not is_gradient)
+                    elif sub_item.layout():
+                        sub_layout = sub_item.layout()
+                        for k in range(sub_layout.count()):
+                            if sub_layout.itemAt(k).widget():
+                                sub_layout.itemAt(k).widget().setVisible(not is_gradient)
 
     def run_calculation(self):
         f = available_functions[self.function_selector.currentText()]
@@ -121,12 +154,10 @@ class FunctionSelector(QWidget):
                 return
         else:  # Квадратичный симплекс
             try:
-                initial_point = [float(self.simplex_initial_x0.text()), float(self.simplex_initial_x1.text())]
                 max_iter = int(self.simplex_max_iter.text())
-                a = float(self.simplex_a.text())
-                b = float(self.simplex_b.text())
-                c = float(self.simplex_c.text())
-                method = method_class(f, initial_point, max_iter, a=a, b=b, c=c)
+                constraints = [{"a": float(c["a"].text()), "b": float(c["b"].text()), "c": float(c["c"].text())}
+                              for c in self.constraints]
+                method = method_class(f, max_iter, constraints=constraints)
             except ValueError as e:
                 print(f"Ошибка ввода параметров: {e}")
                 return
