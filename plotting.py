@@ -9,7 +9,7 @@ class PlotCanvas(FigureCanvas):
         self.ax = fig.add_subplot(111, projection='3d')
         super().__init__(fig)
         self.setParent(parent)
-        self.f = available_functions["Квадратичная простая"]  # Устанавливаем функцию по умолчанию
+        self.f = available_functions["Простая квадратичная"]  # Устанавливаем функцию по умолчанию
         self.surface_data = None
         self.last_f = None
 

@@ -70,9 +70,9 @@ class FunctionSelector(QWidget):
 
         # Поля ввода для генетического алгоритма
         self.genetic_params = QVBoxLayout()
-        self.genetic_max_iter = QLineEdit("1500")
-        self.population_size = QLineEdit("300")
-        self.mutation_rate = QLineEdit("0.003")
+        self.genetic_max_iter = QLineEdit("100")
+        self.population_size = QLineEdit("200")
+        self.mutation_rate = QLineEdit("0.1")
         self.bounds_lower = QLineEdit("-2")
         self.bounds_upper = QLineEdit("2")
 
