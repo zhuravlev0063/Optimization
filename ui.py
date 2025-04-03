@@ -88,6 +88,33 @@ class FunctionSelector(QWidget):
         self.genetic_params.addWidget(self.bounds_upper)
         control_layout.addLayout(self.genetic_params)
 
+        # Поля ввода для роя частиц
+        self.pso_params = QVBoxLayout()
+        self.pso_swarmsize = QLineEdit("3000")
+        self.pso_max_iter = QLineEdit("1000")
+        self.pso_current_velocity = QLineEdit("0.3")
+        self.pso_local_velocity = QLineEdit("2.0")
+        self.pso_global_velocity = QLineEdit("5.0")
+        self.pso_min_bound = QLineEdit("-5.12")
+        self.pso_max_bound = QLineEdit("5.12")
+
+        self.pso_params.addWidget(QLabel("Размер роя:"))
+        self.pso_params.addWidget(self.pso_swarmsize)
+        self.pso_params.addWidget(QLabel("Максимум итераций:"))
+        self.pso_params.addWidget(self.pso_max_iter)
+        self.pso_params.addWidget(QLabel("Инерция (current velocity):"))
+        self.pso_params.addWidget(self.pso_current_velocity)
+        self.pso_params.addWidget(QLabel("Локальный коэффициент:"))
+        self.pso_params.addWidget(self.pso_local_velocity)
+        self.pso_params.addWidget(QLabel("Глобальный коэффициент:"))
+        self.pso_params.addWidget(self.pso_global_velocity)
+        self.pso_params.addWidget(QLabel("Нижняя граница:"))
+        self.pso_params.addWidget(self.pso_min_bound)
+        self.pso_params.addWidget(QLabel("Верхняя граница:"))
+        self.pso_params.addWidget(self.pso_max_bound)
+        control_layout.addLayout(self.pso_params)
+
+
         # Кнопки
         self.run_button = QPushButton("Запустить")
         self.run_button.clicked.connect(self.run_calculation)
@@ -139,6 +166,7 @@ class FunctionSelector(QWidget):
         is_gradient = method == "Градиентный спуск"
         is_simplex = method == "Квадратичный симплекс"
         is_genetic = method == "Генетический алгоритм"
+        is_pso = method == "Рой частиц"
 
         # Видимость параметров градиентного спуска
         for i in range(self.gradient_params.count()):
@@ -169,6 +197,12 @@ class FunctionSelector(QWidget):
             if item.widget():
                 item.widget().setVisible(is_genetic)
 
+        # Видимость параметров PSO
+        for i in range(self.pso_params.count()):
+            item = self.pso_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_pso)
+
     def run_calculation(self):
         f = available_functions[self.function_selector.currentText()]
         method_name = self.method_combo.currentText()
@@ -188,13 +222,28 @@ class FunctionSelector(QWidget):
                 constraints = [{"a": float(c["a"].text()), "b": float(c["b"].text()), "c": float(c["c"].text())}
                               for c in self.constraints]
                 method = method_class(f, max_iter, constraints=constraints)
-            else:  # Генетический алгоритм
+            elif method_name == "Генетический алгоритм":  # Генетический алгоритм
                 max_iter = int(self.genetic_max_iter.text())
                 population_size = int(self.population_size.text())
                 mutation_rate = float(self.mutation_rate.text())
                 bounds = (float(self.bounds_lower.text()), float(self.bounds_upper.text()))
                 method = method_class(f, None, max_iter,
                                     population_size=population_size, mutation_rate=mutation_rate, bounds=bounds)
+            elif method_name == "Рой частиц":
+                max_iter = int(self.pso_max_iter.text())
+                swarmsize = int(self.pso_swarmsize.text())
+                current_velocity_ratio = float(self.pso_current_velocity.text())
+                local_velocity_ratio = float(self.pso_local_velocity.text())
+                global_velocity_ratio = float(self.pso_global_velocity.text())
+                min_bound = float(self.pso_min_bound.text())
+                max_bound = float(self.pso_max_bound.text())
+                method = method_class(f, None, max_iter,
+                                    swarmsize=swarmsize,
+                                    minvalues=[min_bound, min_bound],
+                                    maxvalues=[max_bound, max_bound],
+                                    current_velocity_ratio=current_velocity_ratio,
+                                    local_velocity_ratio=local_velocity_ratio,
+                                    global_velocity_ratio=global_velocity_ratio)
 
             final_point, trajectory, stop_reason, self.iterations_log = method.run()
             self.plot_canvas.plot(f, final_point, trajectory, method_name, constraints=method.kwargs.get("constraints", []))

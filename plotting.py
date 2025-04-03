@@ -24,11 +24,24 @@ class PlotCanvas(FigureCanvas):
             x1_range = np.linspace(-5, 5, 100)
             x2_range = np.linspace(-5, 5, 100)
 
+        # Определяем границы в зависимости от функции
+        if f.__name__ == "schwefel":
+            x1_range = np.linspace(-500, 500, 200)  # Увеличиваем число точек до 200
+            x2_range = np.linspace(-500, 500, 200)
+        elif f.__name__ == "rosenbrock":
+            x1_range = np.linspace(-2, 2, 100)
+            x2_range = np.linspace(-1, 3, 100)
+        else:
+            x1_range = np.linspace(-5, 5, 100)
+            x2_range = np.linspace(-5, 5, 100)
+
         X1, X2 = np.meshgrid(x1_range, x2_range)
         Z = np.array([[f(xi, yi) for xi in x1_range] for yi in x2_range])
         self.surface_data = (X1, X2, Z)
         self.last_f = f
 
+        # Ограничиваем значения Z для лучшей визуализации
+        Z = np.clip(Z, -1000, 1000)  # Чтобы избежать слишком больших значений
         self.ax.plot_surface(X1, X2, Z, cmap='ocean', edgecolor='none', alpha=0.7)
 
         # Траектория
@@ -48,6 +61,12 @@ class PlotCanvas(FigureCanvas):
                             color='b', s=50, label='Genetic final point')
             self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
                          color='blue', linewidth=1, label='Trajectory')
+        elif method_name == "Рой частиц":
+            self.ax.scatter(final_point[0], final_point[1], f(final_point[0], final_point[1]),
+                            color='purple', s=50, label='PSO final point')
+            self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
+                         color='purple', linewidth=1, label='Trajectory')
+
 
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
