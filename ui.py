@@ -37,7 +37,6 @@ class FunctionSelector(QWidget):
         self.epsilon1 = QLineEdit("0.001")
         self.epsilon2 = QLineEdit("0.001")
         self.learning_rate = QLineEdit("0.1")
-
         self.gradient_params.addWidget(QLabel("Начальная точка x0:"))
         self.gradient_params.addWidget(self.initial_x0)
         self.gradient_params.addWidget(QLabel("Начальная точка x1:"))
@@ -57,8 +56,7 @@ class FunctionSelector(QWidget):
         self.simplex_max_iter = QLineEdit("10")
         self.constraints_layout = QVBoxLayout()
         self.constraints = []
-        self.add_constraint()  # Добавляем первое ограничение по умолчанию
-
+        self.add_constraint()
         self.simplex_params.addWidget(QLabel("Максимум итераций:"))
         self.simplex_params.addWidget(self.simplex_max_iter)
         self.simplex_params.addWidget(QLabel("Ограничения: a*x0 + b*x1 ≤ c"))
@@ -75,7 +73,6 @@ class FunctionSelector(QWidget):
         self.mutation_rate = QLineEdit("0.1")
         self.bounds_lower = QLineEdit("-2")
         self.bounds_upper = QLineEdit("2")
-
         self.genetic_params.addWidget(QLabel("Максимум итераций (поколений):"))
         self.genetic_params.addWidget(self.genetic_max_iter)
         self.genetic_params.addWidget(QLabel("Размер популяции:"))
@@ -97,7 +94,6 @@ class FunctionSelector(QWidget):
         self.pso_global_velocity = QLineEdit("5.0")
         self.pso_min_bound = QLineEdit("-5.12")
         self.pso_max_bound = QLineEdit("5.12")
-
         self.pso_params.addWidget(QLabel("Размер роя:"))
         self.pso_params.addWidget(self.pso_swarmsize)
         self.pso_params.addWidget(QLabel("Максимум итераций:"))
@@ -114,6 +110,39 @@ class FunctionSelector(QWidget):
         self.pso_params.addWidget(self.pso_max_bound)
         control_layout.addLayout(self.pso_params)
 
+        # Поля ввода для алгоритма пчел
+        self.bees_params = QVBoxLayout()
+        self.bees_max_iter = QLineEdit("1000")
+        self.bees_scoutbeecount = QLineEdit("300")
+        self.bees_selectedbeecount = QLineEdit("10")
+        self.bees_bestbeecount = QLineEdit("30")
+        self.bees_selsitescount = QLineEdit("15")
+        self.bees_bestsitescount = QLineEdit("5")
+        self.bees_range_lower = QLineEdit("-5.12")
+        self.bees_range_upper = QLineEdit("5.12")
+        self.bees_range_shrink = QLineEdit("0.98")
+        self.bees_max_stagnation = QLineEdit("10")
+        self.bees_params.addWidget(QLabel("Максимум итераций:"))
+        self.bees_params.addWidget(self.bees_max_iter)
+        self.bees_params.addWidget(QLabel("Количество разведчиков:"))
+        self.bees_params.addWidget(self.bees_scoutbeecount)
+        self.bees_params.addWidget(QLabel("Пчел на перспективные участки:"))
+        self.bees_params.addWidget(self.bees_selectedbeecount)
+        self.bees_params.addWidget(QLabel("Пчел на лучшие участки:"))
+        self.bees_params.addWidget(self.bees_bestbeecount)
+        self.bees_params.addWidget(QLabel("Количество перспективных участков:"))
+        self.bees_params.addWidget(self.bees_selsitescount)
+        self.bees_params.addWidget(QLabel("Количество лучших участков:"))
+        self.bees_params.addWidget(self.bees_bestsitescount)
+        self.bees_params.addWidget(QLabel("Нижняя граница поиска:"))
+        self.bees_params.addWidget(self.bees_range_lower)
+        self.bees_params.addWidget(QLabel("Верхняя граница поиска:"))
+        self.bees_params.addWidget(self.bees_range_upper)
+        self.bees_params.addWidget(QLabel("Коэффициент сужения:"))
+        self.bees_params.addWidget(self.bees_range_shrink)
+        self.bees_params.addWidget(QLabel("Максимум итераций без улучшения:"))
+        self.bees_params.addWidget(self.bees_max_stagnation)
+        control_layout.addLayout(self.bees_params)
 
         # Кнопки
         self.run_button = QPushButton("Запустить")
@@ -134,7 +163,6 @@ class FunctionSelector(QWidget):
         self.update_params_visibility()
 
     def add_constraint(self):
-        """Добавление нового ограничения"""
         constraint_layout = QHBoxLayout()
         a_input = QLineEdit("1")
         b_input = QLineEdit("2")
@@ -152,7 +180,6 @@ class FunctionSelector(QWidget):
         self.constraints.append({"a": a_input, "b": b_input, "c": c_input, "layout": constraint_layout})
 
     def remove_constraint(self, layout):
-        """Удаление ограничения"""
         for i, constraint in enumerate(self.constraints):
             if constraint["layout"] == layout:
                 self.constraints_layout.removeItem(layout)
@@ -167,14 +194,13 @@ class FunctionSelector(QWidget):
         is_simplex = method == "Квадратичный симплекс"
         is_genetic = method == "Генетический алгоритм"
         is_pso = method == "Рой частиц"
+        is_bees = method == "Алгоритм пчел"
 
-        # Видимость параметров градиентного спуска
         for i in range(self.gradient_params.count()):
             item = self.gradient_params.itemAt(i)
             if item.widget():
                 item.widget().setVisible(is_gradient)
 
-        # Видимость параметров симплекса
         for i in range(self.simplex_params.count()):
             item = self.simplex_params.itemAt(i)
             if item.widget():
@@ -191,17 +217,20 @@ class FunctionSelector(QWidget):
                             if sub_layout.itemAt(k).widget():
                                 sub_layout.itemAt(k).widget().setVisible(is_simplex)
 
-        # Видимость параметров генетического алгоритма
         for i in range(self.genetic_params.count()):
             item = self.genetic_params.itemAt(i)
             if item.widget():
                 item.widget().setVisible(is_genetic)
 
-        # Видимость параметров PSO
         for i in range(self.pso_params.count()):
             item = self.pso_params.itemAt(i)
             if item.widget():
                 item.widget().setVisible(is_pso)
+
+        for i in range(self.bees_params.count()):
+            item = self.bees_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_bees)
 
     def run_calculation(self):
         f = available_functions[self.function_selector.currentText()]
@@ -222,7 +251,7 @@ class FunctionSelector(QWidget):
                 constraints = [{"a": float(c["a"].text()), "b": float(c["b"].text()), "c": float(c["c"].text())}
                               for c in self.constraints]
                 method = method_class(f, max_iter, constraints=constraints)
-            elif method_name == "Генетический алгоритм":  # Генетический алгоритм
+            elif method_name == "Генетический алгоритм":
                 max_iter = int(self.genetic_max_iter.text())
                 population_size = int(self.population_size.text())
                 mutation_rate = float(self.mutation_rate.text())
@@ -244,6 +273,27 @@ class FunctionSelector(QWidget):
                                     current_velocity_ratio=current_velocity_ratio,
                                     local_velocity_ratio=local_velocity_ratio,
                                     global_velocity_ratio=global_velocity_ratio)
+            elif method_name == "Алгоритм пчел":
+                max_iter = int(self.bees_max_iter.text())
+                scoutbeecount = int(self.bees_scoutbeecount.text())
+                selectedbeecount = int(self.bees_selectedbeecount.text())
+                bestbeecount = int(self.bees_bestbeecount.text())
+                selsitescount = int(self.bees_selsitescount.text())
+                bestsitescount = int(self.bees_bestsitescount.text())
+                range_lower = float(self.bees_range_lower.text())
+                range_upper = float(self.bees_range_upper.text())
+                range_shrink = float(self.bees_range_shrink.text())
+                max_stagnation = int(self.bees_max_stagnation.text())
+                method = method_class(f, None, max_iter,
+                                    scoutbeecount=scoutbeecount,
+                                    selectedbeecount=selectedbeecount,
+                                    bestbeecount=bestbeecount,
+                                    selsitescount=selsitescount,
+                                    bestsitescount=bestsitescount,
+                                    range_lower=range_lower,
+                                    range_upper=range_upper,
+                                    range_shrink=range_shrink,
+                                    max_stagnation=max_stagnation)
 
             final_point, trajectory, stop_reason, self.iterations_log = method.run()
             self.plot_canvas.plot(f, final_point, trajectory, method_name, constraints=method.kwargs.get("constraints", []))

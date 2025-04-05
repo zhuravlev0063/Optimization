@@ -1,3 +1,4 @@
+# plotting.py
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -9,7 +10,7 @@ class PlotCanvas(FigureCanvas):
         self.ax = fig.add_subplot(111, projection='3d')
         super().__init__(fig)
         self.setParent(parent)
-        self.f = available_functions["Простая квадратичная"]  # Устанавливаем функцию по умолчанию
+        self.f = available_functions["Простая квадратичная"]
         self.surface_data = None
         self.last_f = None
 
@@ -17,16 +18,8 @@ class PlotCanvas(FigureCanvas):
         self.ax.clear()
 
         # Определяем границы в зависимости от функции
-        if f.__name__ == "rosenbrock":
-            x1_range = np.linspace(-2, 2, 100)
-            x2_range = np.linspace(-1, 3, 100)
-        else:
-            x1_range = np.linspace(-5, 5, 100)
-            x2_range = np.linspace(-5, 5, 100)
-
-        # Определяем границы в зависимости от функции
         if f.__name__ == "schwefel":
-            x1_range = np.linspace(-500, 500, 200)  # Увеличиваем число точек до 200
+            x1_range = np.linspace(-500, 500, 200)
             x2_range = np.linspace(-500, 500, 200)
         elif f.__name__ == "rosenbrock":
             x1_range = np.linspace(-2, 2, 100)
@@ -40,11 +33,9 @@ class PlotCanvas(FigureCanvas):
         self.surface_data = (X1, X2, Z)
         self.last_f = f
 
-        # Ограничиваем значения Z для лучшей визуализации
-        Z = np.clip(Z, -1000, 1000)  # Чтобы избежать слишком больших значений
+        Z = np.clip(Z, -1000, 1000)
         self.ax.plot_surface(X1, X2, Z, cmap='ocean', edgecolor='none', alpha=0.7)
 
-        # Траектория
         trajectory = np.array(trajectory)
         if method_name == "Градиентный спуск":
             self.ax.scatter(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
@@ -66,7 +57,11 @@ class PlotCanvas(FigureCanvas):
                             color='purple', s=50, label='PSO final point')
             self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
                          color='purple', linewidth=1, label='Trajectory')
-
+        elif method_name == "Алгоритм пчел":
+            self.ax.scatter(final_point[0], final_point[1], f(final_point[0], final_point[1]),
+                            color='orange', s=50, label='Bees final point')
+            self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
+                         color='orange', linewidth=1, label='Trajectory')
 
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
