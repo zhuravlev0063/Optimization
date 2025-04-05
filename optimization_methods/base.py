@@ -1,12 +1,10 @@
+# optimization_methods/base.py
 import numpy as np
-from functions import available_functions
-
-functions = available_functions
 
 class OptimizationMethod:
     def __init__(self, f, initial_point, max_iterations, **kwargs):
         self.f = f
-        self.initial_point = np.array(initial_point, dtype=float)
+        self.initial_point = np.array(initial_point, dtype=float) if initial_point is not None else None
         self.max_iterations = max_iterations
         self.kwargs = kwargs
 

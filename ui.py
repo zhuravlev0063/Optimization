@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QComboBox, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 from PySide6.QtCore import Qt
 from functions import available_functions
-from methods import optimization_methods
+from optimization_methods import optimization_methods
 from plotting import PlotCanvas
 from iteration_window import IterationWindow
 
