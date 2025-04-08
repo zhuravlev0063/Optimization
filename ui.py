@@ -87,8 +87,8 @@ class FunctionSelector(QWidget):
 
         # Поля ввода для роя частиц
         self.pso_params = QVBoxLayout()
-        self.pso_swarmsize = QLineEdit("3000")
-        self.pso_max_iter = QLineEdit("1000")
+        self.pso_swarmsize = QLineEdit("300")
+        self.pso_max_iter = QLineEdit("100")
         self.pso_current_velocity = QLineEdit("0.3")
         self.pso_local_velocity = QLineEdit("2.0")
         self.pso_global_velocity = QLineEdit("5.0")
