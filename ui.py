@@ -144,6 +144,105 @@ class FunctionSelector(QWidget):
         self.bees_params.addWidget(self.bees_max_stagnation)
         control_layout.addLayout(self.bees_params)
 
+        # Поля ввода для иммунной сети
+        self.immune_params = QVBoxLayout()
+        self.immune_max_iter = QLineEdit("100")
+        self.immune_pop_size = QLineEdit("50")
+        self.immune_n_b = QLineEdit("10")
+        self.immune_n_c = QLineEdit("5")
+        self.immune_b_s = QLineEdit("0.2")
+        self.immune_b_b = QLineEdit("0.01")
+        self.immune_b_r = QLineEdit("0.1")
+        self.immune_b_n = QLineEdit("0.1")
+        self.immune_mutation_rate = QLineEdit("0.1")
+        self.immune_range_lower = QLineEdit("-5")
+        self.immune_range_upper = QLineEdit("5")
+        self.immune_params.addWidget(QLabel("Максимум итераций:"))
+        self.immune_params.addWidget(self.immune_max_iter)
+        self.immune_params.addWidget(QLabel("Размер популяции:"))
+        self.immune_params.addWidget(self.immune_pop_size)
+        self.immune_params.addWidget(QLabel("Число лучших антител (n_b):"))
+        self.immune_params.addWidget(self.immune_n_b)
+        self.immune_params.addWidget(QLabel("Максимум клонов (n_c):"))
+        self.immune_params.addWidget(self.immune_n_c)
+        self.immune_params.addWidget(QLabel("Доля лучших клонов (b_s):"))
+        self.immune_params.addWidget(self.immune_b_s)
+        self.immune_params.addWidget(QLabel("Порог BG-аффинности (b_b):"))
+        self.immune_params.addWidget(self.immune_b_b)
+        self.immune_params.addWidget(QLabel("Порог BB-аффинности (b_r):"))
+        self.immune_params.addWidget(self.immune_b_r)
+        self.immune_params.addWidget(QLabel("Доля замены (b_n):"))
+        self.immune_params.addWidget(self.immune_b_n)
+        self.immune_params.addWidget(QLabel("Коэффициент мутации:"))
+        self.immune_params.addWidget(self.immune_mutation_rate)
+        self.immune_params.addWidget(QLabel("Нижняя граница поиска:"))
+        self.immune_params.addWidget(self.immune_range_lower)
+        self.immune_params.addWidget(QLabel("Верхняя граница поиска:"))
+        self.immune_params.addWidget(self.immune_range_upper)
+        control_layout.addLayout(self.immune_params)
+
+        # Поля ввода для бактериальной оптимизации
+        self.bfo_params = QVBoxLayout()
+        self.bfo_num_bacteria = QLineEdit("50")
+        self.bfo_chem_steps = QLineEdit("100")
+        self.bfo_repro_steps = QLineEdit("4")
+        self.bfo_elim_steps = QLineEdit("2")
+        self.bfo_step_size = QLineEdit("0.1")
+        self.bfo_elim_prob = QLineEdit("0.25")
+        self.bfo_elim_count = QLineEdit("10")
+        self.bfo_bounds_lower = QLineEdit("-5")
+        self.bfo_bounds_upper = QLineEdit("5")
+        self.bfo_params.addWidget(QLabel("Число бактерий:"))
+        self.bfo_params.addWidget(self.bfo_num_bacteria)
+        self.bfo_params.addWidget(QLabel("Шаги хемотаксиса:"))
+        self.bfo_params.addWidget(self.bfo_chem_steps)
+        self.bfo_params.addWidget(QLabel("Шаги репродукции:"))
+        self.bfo_params.addWidget(self.bfo_repro_steps)
+        self.bfo_params.addWidget(QLabel("Шаги ликвидации:"))
+        self.bfo_params.addWidget(self.bfo_elim_steps)
+        self.bfo_params.addWidget(QLabel("Величина шага:"))
+        self.bfo_params.addWidget(self.bfo_step_size)
+        self.bfo_params.addWidget(QLabel("Вероятность ликвидации:"))
+        self.bfo_params.addWidget(self.bfo_elim_prob)
+        self.bfo_params.addWidget(QLabel("Число ликвидируемых:"))
+        self.bfo_params.addWidget(self.bfo_elim_count)
+        self.bfo_params.addWidget(QLabel("Нижняя граница:"))
+        self.bfo_params.addWidget(self.bfo_bounds_lower)
+        self.bfo_params.addWidget(QLabel("Верхняя граница:"))
+        self.bfo_params.addWidget(self.bfo_bounds_upper)
+        control_layout.addLayout(self.bfo_params)
+
+        # Поля ввода для гибридного GA-PSO
+        self.hybrid_params = QVBoxLayout()
+        self.hybrid_max_iter = QLineEdit("20")
+        self.hybrid_population_size = QLineEdit("100")
+        self.hybrid_mutation_rate = QLineEdit("0.1")
+        self.hybrid_bounds_lower = QLineEdit("-5.12")
+        self.hybrid_bounds_upper = QLineEdit("5.12")
+        self.hybrid_pso_swarmsize = QLineEdit("10")
+        self.hybrid_current_velocity = QLineEdit("0.5")
+        self.hybrid_local_velocity = QLineEdit("2.0")
+        self.hybrid_global_velocity = QLineEdit("2.0")
+        self.hybrid_params.addWidget(QLabel("Максимум итераций:"))
+        self.hybrid_params.addWidget(self.hybrid_max_iter)
+        self.hybrid_params.addWidget(QLabel("Размер популяции GA:"))
+        self.hybrid_params.addWidget(self.hybrid_population_size)
+        self.hybrid_params.addWidget(QLabel("Вероятность мутации:"))
+        self.hybrid_params.addWidget(self.hybrid_mutation_rate)
+        self.hybrid_params.addWidget(QLabel("Нижняя граница области:"))
+        self.hybrid_params.addWidget(self.hybrid_bounds_lower)
+        self.hybrid_params.addWidget(QLabel("Верхняя граница области:"))
+        self.hybrid_params.addWidget(self.hybrid_bounds_upper)
+        self.hybrid_params.addWidget(QLabel("Размер роя PSO:"))
+        self.hybrid_params.addWidget(self.hybrid_pso_swarmsize)
+        self.hybrid_params.addWidget(QLabel("Инерция PSO:"))
+        self.hybrid_params.addWidget(self.hybrid_current_velocity)
+        self.hybrid_params.addWidget(QLabel("Локальный коэффициент PSO:"))
+        self.hybrid_params.addWidget(self.hybrid_local_velocity)
+        self.hybrid_params.addWidget(QLabel("Глобальный коэффициент PSO:"))
+        self.hybrid_params.addWidget(self.hybrid_global_velocity)
+        control_layout.addLayout(self.hybrid_params)
+
         # Кнопки
         self.run_button = QPushButton("Запустить")
         self.run_button.clicked.connect(self.run_calculation)
@@ -195,6 +294,9 @@ class FunctionSelector(QWidget):
         is_genetic = method == "Генетический алгоритм"
         is_pso = method == "Рой частиц"
         is_bees = method == "Алгоритм пчел"
+        is_immune = method == "Иммунная сеть"
+        is_bfo = method == "Бактериальная оптимизация"
+        is_hybrid = method == "Гибридный GA-PSO"
 
         for i in range(self.gradient_params.count()):
             item = self.gradient_params.itemAt(i)
@@ -231,6 +333,21 @@ class FunctionSelector(QWidget):
             item = self.bees_params.itemAt(i)
             if item.widget():
                 item.widget().setVisible(is_bees)
+
+        for i in range(self.immune_params.count()):
+            item = self.immune_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_immune)
+
+        for i in range(self.bfo_params.count()):
+            item = self.bfo_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_bfo)
+
+        for i in range(self.hybrid_params.count()):
+            item = self.hybrid_params.itemAt(i)
+            if item.widget():
+                item.widget().setVisible(is_hybrid)
 
     def run_calculation(self):
         f = available_functions[self.function_selector.currentText()]
@@ -295,10 +412,77 @@ class FunctionSelector(QWidget):
                                     range_shrink=range_shrink,
                                     max_stagnation=max_stagnation)
 
-            final_point, trajectory, stop_reason, self.iterations_log = method.run()
+            elif method_name == "Иммунная сеть":
+                max_iter = int(self.immune_max_iter.text())
+                pop_size = int(self.immune_pop_size.text())
+                n_b = int(self.immune_n_b.text())
+                n_c = int(self.immune_n_c.text())
+                b_s = float(self.immune_b_s.text())
+                b_b = float(self.immune_b_b.text())
+                b_r = float(self.immune_b_r.text())
+                b_n = float(self.immune_b_n.text())
+                mutation_rate = float(self.immune_mutation_rate.text())
+                range_lower = float(self.immune_range_lower.text())
+                range_upper = float(self.immune_range_upper.text())
+                method = method_class(f, None, max_iter,
+                                      pop_size=pop_size, n_b=n_b, n_c=n_c, b_s=b_s,
+                                      b_b=b_b, b_r=b_r, b_n=b_n, mutation_rate=mutation_rate,
+                                      range_lower=range_lower, range_upper=range_upper)
+
+            elif method_name == "Бактериальная оптимизация":
+                num_bacteria = int(self.bfo_num_bacteria.text())
+                chem_steps = int(self.bfo_chem_steps.text())
+                repro_steps = int(self.bfo_repro_steps.text())
+                elim_steps = int(self.bfo_elim_steps.text())
+                step_size = float(self.bfo_step_size.text())
+                elim_prob = float(self.bfo_elim_prob.text())
+                elim_count = int(self.bfo_elim_count.text())
+                bounds_lower = float(self.bfo_bounds_lower.text())
+                bounds_upper = float(self.bfo_bounds_upper.text())
+                method = method_class(f, None, elim_steps,  # elim_steps как max_iterations
+                                      num_bacteria=num_bacteria,
+                                      chem_steps=chem_steps,
+                                      repro_steps=repro_steps,
+                                      elim_steps=elim_steps,
+                                      step_size=step_size,
+                                      elim_prob=elim_prob,
+                                      elim_count=elim_count,
+                                      bounds_lower=bounds_lower,
+                                      bounds_upper=bounds_upper)
+
+            elif method_name == "Гибридный GA-PSO":
+                max_iter = int(self.hybrid_max_iter.text())
+                population_size = int(self.hybrid_population_size.text())
+                mutation_rate = float(self.hybrid_mutation_rate.text())
+                bounds_lower = float(self.hybrid_bounds_lower.text())
+                bounds_upper = float(self.hybrid_bounds_upper.text())
+                pso_swarmsize = int(self.hybrid_pso_swarmsize.text())
+                current_velocity_ratio = float(self.hybrid_current_velocity.text())
+                local_velocity_ratio = float(self.hybrid_local_velocity.text())
+                global_velocity_ratio = float(self.hybrid_global_velocity.text())
+                method = method_class(f, None, max_iter,
+                                      population_size=population_size,
+                                      mutation_rate=mutation_rate,
+                                      bounds=(bounds_lower, bounds_upper),
+                                      pso_swarmsize=pso_swarmsize,
+                                      minvalues=[bounds_lower, bounds_lower],
+                                      maxvalues=[bounds_upper, bounds_upper],
+                                      current_velocity_ratio=current_velocity_ratio,
+                                      local_velocity_ratio=local_velocity_ratio,
+                                      global_velocity_ratio=global_velocity_ratio)
+            result = method.run()
+            if len(result) == 3:  # Для методов, возвращающих 3 значения
+                final_point, trajectory, stop_reason = result
+                self.iterations_log = []  # Пустой лог для совместимости
+            else:  # Для методов, возвращающих 4 значения
+                final_point, trajectory, stop_reason, self.iterations_log = result
+
             self.plot_canvas.plot(f, final_point, trajectory, method_name, constraints=method.kwargs.get("constraints", []))
-        except ValueError as e:
+        except   ValueError as e:
             print(f"Ошибка ввода параметров: {e}")
+            return
+        except Exception as e:
+            print(f"Неожиданная ошибка: {e}")
             return
 
     def show_iterations(self):

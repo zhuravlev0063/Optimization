@@ -26,9 +26,9 @@ class BeesAlgorithm(OptimizationMethod):
 
         # пересчитывает фитнес для текущей позиции
         def calcfitness(self, outer):
-            fx = outer.f(self.position[0], self.position[1])
+            self.fitness = outer.f(self.position[0], self.position[1])
 
-        # отправляет пчелу в окрестность заданной позиции
+        # отправляет рабочую пчелу в окрестность заданной позиции
         def goto(self, otherpos, range_list, outer):  #otherpos: Центр участка
             self.position = np.array([otherpos[n] + random.uniform(-range_list[n], range_list[n])
                                     for n in range(len(otherpos))])
@@ -116,7 +116,7 @@ class BeesAlgorithm(OptimizationMethod):
                         swarm[bee_index].goto(sel_bee.position, range_list, self)
                     bee_index += 1
             #Разведчики
-            #Оставшиеся пчёлы ищут случайные точки
+            #Оставшиеся пчёлы разведчики ищут случайные точки
             for bee in swarm[bee_index:]:
                 bee.gotorandom(self)
 
@@ -124,5 +124,12 @@ class BeesAlgorithm(OptimizationMethod):
             if stagnation_counter >= self.max_stagnation:
                 range_list = [r * self.range_shrink for r in range_list]
                 stagnation_counter = 0
-
+                if best_fitness == swarm[0].fitness:  # Если значение не улучшилось
+                    # Перезапускаем только разведчиков
+                    for bee in swarm[bee_index:]:  # Только разведчики
+                        bee.gotorandom(self)
+                    # Слегка увеличиваем радиус, но не до начального
+                    range_list = [r / (self.range_shrink ** 0.5) for r in
+                                  range_list]  # Увеличиваем на меньший коэффициент
+                    
         return best_position, trajectory, "Bees Algorithm завершён", iterations_log

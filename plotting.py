@@ -62,6 +62,21 @@ class PlotCanvas(FigureCanvas):
                             color='orange', s=50, label='Bees final point')
             self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
                          color='orange', linewidth=1, label='Trajectory')
+        elif method_name == "Иммунная сеть":
+            self.ax.scatter(final_point[0], final_point[1], f(final_point[0], final_point[1]),
+                            color='cyan', s=50, label='Immune Network final point')
+            self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
+                         color='cyan', linewidth=1, label='Trajectory')
+        elif method_name == "Бактериальная оптимизация":
+            self.ax.scatter(final_point[0], final_point[1], f(final_point[0], final_point[1]),
+                            color='yellow', s=50, label='BFO final point')
+            self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
+                         color='yellow', linewidth=1, label='Trajectory')
+        elif method_name == "Гибридный GA-PSO":
+            self.ax.scatter(final_point[0], final_point[1], f(final_point[0], final_point[1]),
+                            color='magenta', s=50, label='Hybrid GA-PSO final point')
+            self.ax.plot(trajectory[:, 0], trajectory[:, 1], [f(x, y) for x, y in trajectory],
+                         color='magenta', linewidth=1, label='Trajectory')
 
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Y')
