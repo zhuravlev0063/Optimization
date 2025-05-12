@@ -120,7 +120,7 @@ class BeesAlgorithm(OptimizationMethod):
             for bee in swarm[bee_index:]:
                 bee.gotorandom(self)
 
-            # Сужение диапазона при стагнации
+
             if stagnation_counter >= self.max_stagnation:
                 range_list = [r * self.range_shrink for r in range_list]
                 stagnation_counter = 0
@@ -128,8 +128,7 @@ class BeesAlgorithm(OptimizationMethod):
                     # Перезапускаем только разведчиков
                     for bee in swarm[bee_index:]:  # Только разведчики
                         bee.gotorandom(self)
-                    # Слегка увеличиваем радиус, но не до начального
-                    range_list = [r / (self.range_shrink ** 0.5) for r in
-                                  range_list]  # Увеличиваем на меньший коэффициент
-                    
+                    range_list = [r / (self.range_shrink ** 0.5) for r in range_list]  # Увеличиваем на меньший коэффициент
+
+
         return best_position, trajectory, "Bees Algorithm завершён", iterations_log

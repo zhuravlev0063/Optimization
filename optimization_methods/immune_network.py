@@ -5,22 +5,27 @@ from .base import OptimizationMethod
 class ImmuneNetworkOptimization(OptimizationMethod):
     def __init__(self, f, initial_point, max_iterations, **kwargs):
         super().__init__(f, initial_point, max_iterations, **kwargs)
-        self.pop_size = self.kwargs.get("pop_size", 50)  # Размер популяции
-        self.n_b = self.kwargs.get("n_b", 10)  # Число лучших антител для клонирования
-        self.n_c = self.kwargs.get("n_c", 5)  # Максимальное число клонов
-        self.b_s = self.kwargs.get("b_s", 0.2)  # Доля лучших клонов
-        self.b_b = self.kwargs.get("b_b", 0.01)  # Порог BG-аффинности
-        self.b_r = self.kwargs.get("b_r", 0.1)  # Порог BB-аффинности
-        self.b_n = self.kwargs.get("b_n", 0.1)  # Доля замены случайными антителами
-        self.mutation_rate = self.kwargs.get("mutation_rate", 0.1)  # Коэффициент мутации
-        self.range_lower = self.kwargs.get("range_lower", -5)  # Нижняя граница
-        self.range_upper = self.kwargs.get("range_upper", 5)   # Верхняя граница
+        self.pop_size = self.kwargs.get("pop_size", 50)
+        self.n_b = self.kwargs.get("n_b", 10)
+        self.n_c = self.kwargs.get("n_c", 5)
+        self.b_s = self.kwargs.get("b_s", 0.2)
+        self.b_b = self.kwargs.get("b_b", 0.01)
+        self.b_r = self.kwargs.get("b_r", 0.1)
+        self.b_n = self.kwargs.get("b_n", 0.1)
+        self.mutation_rate = self.kwargs.get("mutation_rate", 0.1)
+        self.range_lower = self.kwargs.get("range_lower", -5)
+        self.range_upper = self.kwargs.get("range_upper", 5)
+
+        # Параметры для обнаружения стагнации
+        self.stagnation_threshold = self.kwargs.get("stagnation_threshold", 10)
+        self.stagnation_counter = 0
+        self.prev_best_fitness = None
 
     class Antibody:
         def __init__(self, x, y, outer):
             self.x = x
             self.y = y
-            self.bg_affinity = 1 / (1 + outer.f(x, y))  # BG-аффинность
+            self.bg_affinity = 1 / (1 + outer.f(x, y))
 
     def compute_bb_affinity(self, ab1, ab2):
         return np.sqrt((ab1.x - ab2.x)**2 + (ab1.y - ab2.y)**2)
@@ -31,7 +36,7 @@ class ImmuneNetworkOptimization(OptimizationMethod):
                 for _ in range(self.pop_size)]
 
     def clone_antibody(self, antibody):
-        num_clones = int(1 + (self.n_c - 1) * antibody.bg_affinity)  # Пропорционально аффинности
+        num_clones = int(1 + (self.n_c - 1) * antibody.bg_affinity)
         return [self.Antibody(antibody.x, antibody.y, self) for _ in range(num_clones)]
 
     def mutate_antibody(self, antibody):
@@ -43,7 +48,7 @@ class ImmuneNetworkOptimization(OptimizationMethod):
 
     def run(self):
         S_b = self.initialize_population()
-        S_m = []  # Клетки памяти
+        S_m = []
         best_solution = None
         trajectory = []
         iterations_log = []
@@ -66,7 +71,7 @@ class ImmuneNetworkOptimization(OptimizationMethod):
             new_memory = [ab for ab in new_memory if ab.bg_affinity >= self.b_b]
             S_m.extend(new_memory)
 
-            # Шаг 2.4: Сжатие памяти по BB-аффинности
+            # Шаг 2.4: Сжатие памяти
             i = 0
             while i < len(S_m):
                 j = i + 1
@@ -78,7 +83,7 @@ class ImmuneNetworkOptimization(OptimizationMethod):
                 i += 1
             S_b.extend(S_m)
 
-            # Шаг 3: Сжатие сети по BB-аффинности
+            # Шаг 3: Сжатие сети
             i = 0
             while i < len(S_b):
                 j = i + 1
@@ -89,7 +94,7 @@ class ImmuneNetworkOptimization(OptimizationMethod):
                         j += 1
                 i += 1
 
-            # Шаг 4: Обновление b_n% худших антител
+            # Шаг 4: Обновление части популяции случайными антителами
             S_b = sorted(S_b, key=lambda ab: ab.bg_affinity, reverse=True)
             num_replace = int(self.b_n * self.pop_size)
             S_b = S_b[:self.pop_size - num_replace]
@@ -106,8 +111,26 @@ class ImmuneNetworkOptimization(OptimizationMethod):
             trajectory.append([best_solution.x, best_solution.y])
             iterations_log.append(f"Итерация {iteration}: x=[{best_solution.x:.6f}, {best_solution.y:.6f}], f(x)={current_fitness:.6f}")
 
+            # Проверка на стагнацию
+            if self.prev_best_fitness is not None:
+                if abs(self.prev_best_fitness - current_fitness) < 1e-8:
+                    self.stagnation_counter += 1
+                else:
+                    self.stagnation_counter = 0
+            else:
+                self.prev_best_fitness = current_fitness
+
+            self.prev_best_fitness = current_fitness
+
+            # Реакция на стагнацию
+            if self.stagnation_counter >= self.stagnation_threshold:
+                self.n_c = max(1, int(self.n_c * 0.7))  # уменьшить число клонов
+                self.mutation_rate = min(1.0, self.mutation_rate * 1.5)  # увеличить мутацию
+                self.b_n = min(0.5, self.b_n + 0.05)  # увеличить долю случайной замены
+                self.stagnation_counter = 0
+
             # Условие остановки
-            if current_fitness < 1e-6:
+            if current_fitness < 1e-10:
                 iterations_log.append("Достигнут минимум!")
                 break
 
