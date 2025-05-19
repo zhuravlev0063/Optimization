@@ -2,8 +2,10 @@ from PySide6.QtWidgets import QWidget, QComboBox, QPushButton, QVBoxLayout, QHBo
 from PySide6.QtCore import Qt
 from functions import available_functions
 from optimization_methods import optimization_methods
+from optimization_methods.hybrid_gapso import adapt_function
 from plotting import PlotCanvas
 from iteration_window import IterationWindow
+from time_window import TimeVsDimensionWindow
 
 class FunctionSelector(QWidget):
     def __init__(self):
@@ -252,6 +254,10 @@ class FunctionSelector(QWidget):
         self.iteration_button.clicked.connect(self.show_iterations)
         control_layout.addWidget(self.iteration_button)
 
+        self.time_plot_button = QPushButton("Показать графики сравнения")
+        self.time_plot_button.clicked.connect(self.show_time_plot)
+        control_layout.addWidget(self.time_plot_button)
+
         control_layout.addStretch()
 
         self.plot_canvas = PlotCanvas(self)
@@ -373,7 +379,7 @@ class FunctionSelector(QWidget):
                 population_size = int(self.population_size.text())
                 mutation_rate = float(self.mutation_rate.text())
                 bounds = (float(self.bounds_lower.text()), float(self.bounds_upper.text()))
-                method = method_class(f, None, max_iter,
+                method = method_class(adapt_function(f, 2), None, max_iter,
                                     population_size=population_size, mutation_rate=mutation_rate, bounds=bounds)
             elif method_name == "Рой частиц":
                 max_iter = int(self.pso_max_iter.text())
@@ -383,7 +389,7 @@ class FunctionSelector(QWidget):
                 global_velocity_ratio = float(self.pso_global_velocity.text())
                 min_bound = float(self.pso_min_bound.text())
                 max_bound = float(self.pso_max_bound.text())
-                method = method_class(f, None, max_iter,
+                method = method_class(adapt_function(f, 2), None, max_iter,
                                     swarmsize=swarmsize,
                                     minvalues=[min_bound, min_bound],
                                     maxvalues=[max_bound, max_bound],
@@ -411,7 +417,6 @@ class FunctionSelector(QWidget):
                                     range_upper=range_upper,
                                     range_shrink=range_shrink,
                                     max_stagnation=max_stagnation)
-
             elif method_name == "Иммунная сеть":
                 max_iter = int(self.immune_max_iter.text())
                 pop_size = int(self.immune_pop_size.text())
@@ -428,7 +433,6 @@ class FunctionSelector(QWidget):
                                       pop_size=pop_size, n_b=n_b, n_c=n_c, b_s=b_s,
                                       b_b=b_b, b_r=b_r, b_n=b_n, mutation_rate=mutation_rate,
                                       range_lower=range_lower, range_upper=range_upper)
-
             elif method_name == "Бактериальная оптимизация":
                 num_bacteria = int(self.bfo_num_bacteria.text())
                 chem_steps = int(self.bfo_chem_steps.text())
@@ -439,7 +443,7 @@ class FunctionSelector(QWidget):
                 elim_count = int(self.bfo_elim_count.text())
                 bounds_lower = float(self.bfo_bounds_lower.text())
                 bounds_upper = float(self.bfo_bounds_upper.text())
-                method = method_class(f, None, elim_steps,  # elim_steps как max_iterations
+                method = method_class(f, None, elim_steps,
                                       num_bacteria=num_bacteria,
                                       chem_steps=chem_steps,
                                       repro_steps=repro_steps,
@@ -449,7 +453,6 @@ class FunctionSelector(QWidget):
                                       elim_count=elim_count,
                                       bounds_lower=bounds_lower,
                                       bounds_upper=bounds_upper)
-
             elif method_name == "Гибридный GA-PSO":
                 max_iter = int(self.hybrid_max_iter.text())
                 population_size = int(self.hybrid_population_size.text())
@@ -460,7 +463,7 @@ class FunctionSelector(QWidget):
                 current_velocity_ratio = float(self.hybrid_current_velocity.text())
                 local_velocity_ratio = float(self.hybrid_local_velocity.text())
                 global_velocity_ratio = float(self.hybrid_global_velocity.text())
-                method = method_class(f, None, max_iter,
+                method = method_class(adapt_function(f, 2), None, max_iter,
                                       population_size=population_size,
                                       mutation_rate=mutation_rate,
                                       bounds=(bounds_lower, bounds_upper),
@@ -471,19 +474,25 @@ class FunctionSelector(QWidget):
                                       local_velocity_ratio=local_velocity_ratio,
                                       global_velocity_ratio=global_velocity_ratio)
             result = method.run()
-            if len(result) == 3:  # Для методов, возвращающих 3 значения
+            if len(result) == 3:
                 final_point, trajectory, stop_reason = result
-                self.iterations_log = []  # Пустой лог для совместимости
-            else:  # Для методов, возвращающих 4 значения
+                self.iterations_log = []
+            else:
                 final_point, trajectory, stop_reason, self.iterations_log = result
 
             self.plot_canvas.plot(f, final_point, trajectory, method_name, constraints=method.kwargs.get("constraints", []))
-        except   ValueError as e:
+        except ValueError as e:
             print(f"Ошибка ввода параметров: {e}")
             return
         except Exception as e:
             print(f"Неожиданная ошибка: {e}")
+            import traceback
+            traceback.print_exc()
             return
 
     def show_iterations(self):
         IterationWindow(self.iterations_log).exec()
+
+    def show_time_plot(self):
+        f = available_functions[self.function_selector.currentText()]
+        TimeVsDimensionWindow(f).exec()
